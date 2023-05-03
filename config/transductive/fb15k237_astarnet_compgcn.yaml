@@ -1,0 +1,40 @@
+output_dir: ~/scratch/experiments/
+
+dataset:
+  class: FB15k237
+  path: ~/kg-datasets/
+
+task:
+  class: KnowledgeGraphCompletion
+  model:
+    class: AStarNet
+    base_layer:
+      class: CompGCNConv
+      input_dim: 32
+      output_dim: 32
+      message_func: mult
+      layer_norm: yes
+    num_layer: 6
+    short_cut: yes
+    remove_one_hop: yes
+    node_ratio: 0.05
+    break_tie: yes
+  criterion: bce
+  num_negative: 32
+  strict_negative: yes
+  adversarial_temperature: 0.5
+  sample_weight: no
+  full_batch_eval: yes
+
+optimizer:
+  class: Adam
+  lr: 5.0e-3
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 64
+
+train:
+  num_epoch: 20
+
+metric: mrr

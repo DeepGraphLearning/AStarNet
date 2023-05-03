@@ -1,0 +1,42 @@
+output_dir: ~/scratch/experiments/
+
+dataset:
+  class: YAGO310
+  path: ~/kg-datasets/
+
+task:
+  class: KnowledgeGraphCompletion
+  model:
+    class: NBFNet
+    base_layer:
+      class: NBFNetConv
+      input_dim: 32
+      output_dim: 32
+      query_input_dim: 32
+      message_func: distmult
+      aggregate_func: pna
+      layer_norm: yes
+      dependent: yes
+    num_layer: 6
+    short_cut: yes
+  criterion: bce
+  num_negative: 32
+  strict_negative: yes
+  adversarial_temperature: 0.5
+  sample_weight: no
+  full_batch_eval: yes
+
+optimizer:
+  class: Adam
+  lr: 5.0e-3
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 10
+  log_interval: 10
+
+train:
+  num_epoch: 10
+  batch_per_epoch: 1000
+
+metric: mrr
