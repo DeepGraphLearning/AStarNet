@@ -24,7 +24,7 @@ class InductiveKnowledgeGraphCompletion(tasks.KnowledgeGraphCompletion, core.Con
             dataset = train_set
         self.num_entity = dataset.num_entity
         self.num_relation = dataset.num_relation
-        self.register_buffer("graph", dataset.input)
+        self.register_buffer("graph", dataset.graph)
         self.register_buffer("fact_graph", dataset.fact_graph)
         self.register_buffer("inductive_graph", dataset.inductive_graph)
         self.register_buffer("inductive_fact_graph", dataset.inductive_fact_graph)
@@ -46,7 +46,7 @@ class InductiveKnowledgeGraphCompletion(tasks.KnowledgeGraphCompletion, core.Con
         if all_loss is None:
             # test
             all_index = torch.arange(graph.num_node, device=self.device)
-            num_negative = self.num_entity if self.full_batch_eval else self.num_negative
+            num_negative = graph.num_node if self.full_batch_eval else self.num_negative
             t_preds = []
             h_preds = []
             for neg_index in all_index.split(num_negative):
@@ -118,7 +118,8 @@ class KnowledgeGraphCompletionOGB(tasks.KnowledgeGraphCompletion, core.Configura
         self.evaluator = linkproppred.Evaluator(dataset.name)
         self.num_entity = dataset.num_entity
         self.num_relation = dataset.num_relation
-        fact_mask = torch.ones(len(dataset), dtype=torch.bool)
+        fact_mask = torch.zeros(len(dataset), dtype=torch.bool)
+        fact_mask[train_set.indices] = 1
         if self.fact_ratio:
             length = int(len(train_set) * self.fact_ratio)
             index = torch.randperm(len(train_set))[length:]

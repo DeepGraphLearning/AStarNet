@@ -1,8 +1,8 @@
-output_dir: ~/scratch/experiments/
+output_dir: ~/experiments/
 
 dataset:
   class: WN18RRInductive
-  path: ~/kg-datasets/
+  path: ~/datasets/knowledge_graphs/
   version: {{ version }}
 
 task:

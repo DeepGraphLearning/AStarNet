@@ -273,7 +273,8 @@ class AStarNetwork(NeuralBellmanFordNetwork, core.Configurable):
         num_edges = scatter_add(num_neighbors, graph.node2graph[node_in], dim_size=len(graph))
         es = torch.min(es, num_edges)
         # chunk batch to reduce peak memory usage
-        chunk_size = max(int(1e7 / num_edges.float().mean()), 1)
+        num_edge_mean = num_edges.float().mean().clamp(min=1)
+        chunk_size = max(int(1e7 / num_edge_mean), 1)
         num_nodes = num_nodes.split(chunk_size)
         num_edges = num_edges.split(chunk_size)
         es = es.split(chunk_size)
@@ -315,10 +316,8 @@ class AStarNetwork(NeuralBellmanFordNetwork, core.Configurable):
             subgraph = graph.edge_mask(edge_index, compact=True)
             subgraph.pna_degree_mean = pna_degree_mean
 
-            if subgraph.num_node > 0:
-                layer_input = F.sigmoid(subgraph.score).unsqueeze(-1) * subgraph.hidden
-                hidden = layer(subgraph, layer_input)
-
+            layer_input = F.sigmoid(subgraph.score).unsqueeze(-1) * subgraph.hidden
+            hidden = layer(subgraph, layer_input)
             out_mask = subgraph.degree_out > 0
             node_out = subgraph.node_id[out_mask]
             if self.short_cut:
@@ -327,6 +326,7 @@ class AStarNetwork(NeuralBellmanFordNetwork, core.Configurable):
                 graph.hidden[node_out] = hidden[out_mask]
             index = graph.node2graph[node_out]
             graph.score[node_out] = self.score(graph.hidden[node_out], query[index])
+
             # update graph-level attributes
             data_dict, meta_dict = subgraph.data_by_meta("graph")
             graph.meta_dict.update(meta_dict)

@@ -64,7 +64,6 @@ class VirtualTensor(object):
         keys = indexes[0]
 
         assert keys.numel() == 0 or (keys.max() < len(self.index) and keys.min() >= 0)
-        x = self.index[keys]
         values = self.input[(self.index[keys],) + indexes[1:]]
         if len(self.keys) > 0:
             index = torch.bucketize(keys, self.keys)

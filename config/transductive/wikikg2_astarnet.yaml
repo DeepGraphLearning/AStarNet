@@ -1,8 +1,8 @@
-output_dir: ~/scratch/experiments/
+output_dir: ~/experiments/
 
 dataset:
   class: OGBLWikiKG2
-  path: ~/kg-datasets/
+  path: ~/datasets/knowledge_graphs/
 
 task:
   class: KnowledgeGraphCompletionOGB
@@ -27,7 +27,7 @@ task:
   criterion: bce
   num_negative: 1048576
   strict_negative: yes
-  adversarial_temperature: 1
+  adversarial_temperature: 0.5
   sample_weight: no
   full_batch_eval: yes
 
@@ -37,13 +37,13 @@ optimizer:
 
 engine:
   gpus: {{ gpus }}
-  batch_size: 24
+  batch_size: 32
   log_interval: 10
 
 train:
-  num_epoch: 20
-  batch_per_epoch: 200
+  num_epoch: 50
+  batch_per_epoch: 400
 
-fast_test: 10000
+fast_test: 5000
 
 metric: mrr
