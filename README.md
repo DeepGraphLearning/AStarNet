@@ -25,7 +25,7 @@ A\*Net is the first path-based method that scales to ogbl-wikikg2 (2.5M entities
 16M triplets). It also enjoys the advantages of path-based methods such as
 inductive capacity and interpretability.
 
-<video src="https://user-images.githubusercontent.com/17213634/235830460-32140463-ab8b-4c2c-a26a-f16b6c4d705c.mp4"></video>
+https://github.com/DeepGraphLearning/AStarNet/assets/17213634/b521113e-1360-4082-af65-e2579bf01b29
 
 This codebase contains implementation for A\*Net and its predecessor [NBFNet].
 
@@ -132,6 +132,17 @@ You may refer to the following tutorials of TorchDrug
 
    This is probably because the JIT cache is broken.
    Try `rm -r ~/.cache/torch_extensions/*` and run the code again.
+
+2. **The code is stuck when downloading dataset files.**
+
+   This is probably because your machine is not connected to the Internet.
+   You can manually download datasets with the following lines
+   ```python
+   from torchdrug import datasets
+   from reasoning import dataset
+   fb_transductive = datasets.FB15k237("~/datasets/knowledge_graphs")
+   fb_inductive = dataset.FB15k237Inductive("~/datasets/knowledge_graphs")
+   ```
 
 ## Citation ##
 
