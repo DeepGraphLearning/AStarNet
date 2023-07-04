@@ -1,0 +1,2 @@
+Which Wikidata relation is in the following question? Please only output the relation. e.g. instance of (P31).
+Question: {{ input }}

@@ -1,0 +1,5 @@
+{% set h, r, t = triplet %}Suppose {{ t }} is the answer to the question. Which of the two choices is correct? Please only output the choice.
+Question: {{ input }}
+Choices:
+0: {{ t }} is the {{ r }} of {{ h }}.
+1: {{ h }} is the {{ r }} of {{ t }}.

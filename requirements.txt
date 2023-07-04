@@ -5,3 +5,4 @@ torchdrug>=0.2.0
 ogb>=1.3.0
 easydict
 pyyaml
+openai

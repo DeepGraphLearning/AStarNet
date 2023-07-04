@@ -25,6 +25,11 @@ A\*Net is the first path-based method that scales to ogbl-wikikg2 (2.5M entities
 16M triplets). It also enjoys the advantages of path-based methods such as
 inductive capacity and interpretability.
 
+Here is a demo of A\*Net with a ChatGPT interface. By reasoning on the Wikidata
+knowledge graph, ChatGPT produces more grounded predictions and less hallucination.
+
+![A*Net with ChatGPT interface](asset/chat.png)
+
 https://github.com/DeepGraphLearning/AStarNet/assets/17213634/b521113e-1360-4082-af65-e2579bf01b29
 
 This codebase contains implementation for A\*Net and its predecessor [NBFNet].
@@ -40,14 +45,14 @@ with 3.7 <= Python <= 3.10 and PyTorch >= 1.13.0.
 
 ```bash
 conda install pytorch cudatoolkit torchdrug pytorch-sparse -c pytorch -c pyg -c milagraph
-conda install ogb easydict pyyaml -c conda-forge
+conda install ogb easydict pyyaml openai -c conda-forge
 ```
 
 ### From Pip ###
 
 ```bash
 pip install torch torchdrug torch-sparse
-pip install ogb easydict pyyaml
+pip install ogb easydict pyyaml openai
 ```
 
 ## Usage ##
@@ -72,6 +77,20 @@ torchrun --nproc_per_node=4 script/run.py -c config/transductive/fb15k237_astarn
 For the inductive setting, there are 4 different splits for each dataset. You need
 to additionally specify the split version with `--version v1`.
 
+## ChatGPT Interface ##
+
+We provide a ChatGPT interface of A\*Net, where users can interact with A\*Net
+through natural language. To play with the ChatGPT interface, download the
+checkpoint [here] and run the following command. Note you need an OpenAI API key
+to run the demo.
+
+```bash
+export OPENAI_API_KEY=your-openai-api-key
+python script/chat.py -c config/transductive/wikikg2_astarnet_visualize.yaml --checkpoint wikikg2_astarnet.pth --gpus [0]
+```
+
+[here]: https://drive.google.com/drive/folders/15NtyKEXnP4NkHIZEArfTE04Tn5PjpbpJ?usp=sharing
+
 ## Visualization ##
 
 A\*Net supports visualization of important paths for its predictions. With a trained
@@ -79,7 +98,7 @@ model, you can visualize the important paths with the following line. Please rep
 the checkpoint with your own path.
 
 ```bash
-python script/visualize.py -c config/knowledge_graph/fb15k237_astarnet_visualize.yaml --checkpoint /path/to/astarnet/experiment/model_epoch_20.pth
+python script/visualize.py -c config/transductive/fb15k237_astarnet_visualize.yaml --checkpoint /path/to/astarnet/experiment/model_epoch_20.pth --gpus [0]
 ```
 
 ## Parameterize with your favourite GNNs ##
@@ -132,17 +151,6 @@ You may refer to the following tutorials of TorchDrug
 
    This is probably because the JIT cache is broken.
    Try `rm -r ~/.cache/torch_extensions/*` and run the code again.
-
-2. **The code is stuck when downloading dataset files.**
-
-   This is probably because your machine is not connected to the Internet.
-   You can manually download datasets with the following lines
-   ```python
-   from torchdrug import datasets
-   from reasoning import dataset
-   fb_transductive = datasets.FB15k237("~/datasets/knowledge_graphs")
-   fb_inductive = dataset.FB15k237Inductive("~/datasets/knowledge_graphs")
-   ```
 
 ## Citation ##
 

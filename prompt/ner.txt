@@ -1,0 +1,2 @@
+What is the named entity in the following question? Please only output the entity. e.g. Joe Biden
+Question: {{ input }}

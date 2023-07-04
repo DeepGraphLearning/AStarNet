@@ -29,18 +29,31 @@ def load_vocab(dataset):
     return vocabs
 
 
-def visualize(solver, triplet, entity_vocab, relation_vocab):
+def visualize(solver, sample, entity_vocab, relation_vocab):
     num_relation = len(relation_vocab)
-    h, t, r = triplet.tolist()
-    batch = torch.tensor([[h, t, r], [t, h, r + num_relation]], device=solver.device)
+    h_index, t_index, r_index = sample.unbind(-1)
+    inverse = torch.stack([t_index, h_index, r_index + num_relation], dim=-1)
+    batch = sample.unsqueeze(0)
+    if sample.ndim == 1:
+        vis_batch = torch.stack([sample, inverse])
+    else:
+        is_t_neg = (h_index == h_index[0]).all()
+        vis_batch = sample[:1] if is_t_neg else inverse[:1]
+    batch = batch.to(solver.device)
+    vis_batch = vis_batch.to(solver.device)
 
     solver.model.eval()
     with torch.no_grad():
-        pred, (mask, target) = solver.model.predict_and_target(batch[:1])
-    pos_pred = pred.gather(-1, target.unsqueeze(-1))
-    rankings = torch.sum((pos_pred <= pred) & mask, dim=-1) + 1
-    rankings = rankings.squeeze(0)
-    paths, weights, num_steps = solver.model.visualize(batch)
+        pred, target = solver.model.predict_and_target(batch)
+    if isinstance(target, tuple):
+        mask, target = target
+        pos_pred = pred.gather(-1, target.unsqueeze(-1))
+        rankings = torch.sum((pos_pred <= pred) & mask, dim=-1) + 1
+        rankings = rankings.squeeze(0)
+    else:
+        pos_pred = pred.gather(-1, target.unsqueeze(-1))
+        rankings = torch.sum(pos_pred <= pred, dim=-1) + 1
+    paths, weights, num_steps = solver.model.visualize(vis_batch)
     batch = batch.tolist()
     rankings = rankings.tolist()
     paths = paths.tolist()
@@ -48,8 +61,8 @@ def visualize(solver, triplet, entity_vocab, relation_vocab):
     num_steps = num_steps.tolist()
 
     logger.warning("")
-    for i in range(len(batch)):
-        h, t, r = batch[i]
+    for i in range(len(vis_batch)):
+        h, t, r = vis_batch[i]
         h_token = entity_vocab[h]
         t_token = entity_vocab[t]
         r_token = relation_vocab[r % num_relation]
@@ -59,7 +72,7 @@ def visualize(solver, triplet, entity_vocab, relation_vocab):
         logger.warning("rank(%s | %s, %s) = %g" % (t_token, h_token, r_token, rankings[i]))
 
         for path, weight, num_step in zip(paths[i], weights[i], num_steps[i]):
-            if weight == float("inf"):
+            if weight == float("-inf"):
                 break
             triplets = []
             for h, t, r in path[:num_step]:
