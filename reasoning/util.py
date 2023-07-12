@@ -108,7 +108,20 @@ def build_solver(cfg, dataset):
     solver = core.Engine(task, train_set, valid_set, test_set, optimizer, **cfg.engine)
 
     if "checkpoint" in cfg:
-        solver.load(cfg.checkpoint)
+        if comm.get_rank() == 0:
+            logger.warning("Load checkpoint from %s" % cfg.checkpoint)
+        checkpoint = os.path.expanduser(cfg.checkpoint)
+        state = torch.load(cfg.checkpoint, map_location=solver.device)
+        state["model"] = {k: v for k, v in state["model"].items() if isinstance(v, torch.Tensor)}
+
+        solver.model.load_state_dict(state["model"], strict=False)
+        solver.optimizer.load_state_dict(state["optimizer"])
+        for state in solver.optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(solver.device)
+
+        comm.synchronize()
 
     return solver
 
