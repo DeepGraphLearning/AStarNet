@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import logging
 import argparse
@@ -133,20 +132,3 @@ def detect_variables(cfg_file):
     ast = env.parse(raw)
     vars = meta.find_undeclared_variables(ast)
     return vars
-
-
-class DebugHook:
-    instance = None
-
-    def __call__(self, *args, **kwargs):
-        if comm.get_rank() > 0:
-            while True:
-                pass
-
-        if self.instance is None:
-            from IPython.core import ultratb
-            self.instance = ultratb.FormattedTB(mode="Plain", color_scheme="Linux", call_pdb=1)
-        return self.instance(*args, **kwargs)
-
-
-sys.excepthook = DebugHook()
